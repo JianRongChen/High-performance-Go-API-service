@@ -191,13 +191,20 @@ scripts\setup_dev.bat        # Windows
 
 **所有平台：**
 ```bash
+# 方法1: 直接使用 swag 命令
 swag init -g cmd/server/main.go -o docs
+
+# 方法2: 使用脚本（推荐）
+bash scripts/swagger.sh      # Linux/Mac/Git Bash
+scripts\swagger.bat          # Windows CMD
 ```
 
 **或使用开发环境设置脚本（会自动生成）：**
 ```bash
 bash scripts/setup_dev.sh
 ```
+
+**注意**：必须使用 `-g cmd/server/main.go` 参数指定入口文件路径，不能直接运行 `swag init`。
 
 文档生成后，启动服务并访问 `http://localhost:8080/swagger/index.html` 查看 API 文档
 
@@ -531,8 +538,15 @@ bash scripts/test_api.sh
 
 ### 生成文档
 ```bash
+# 直接使用命令
 swag init -g cmd/server/main.go -o docs
+
+# 或使用脚本
+bash scripts/swagger.sh      # Linux/Mac/Git Bash
+scripts\swagger.bat          # Windows CMD
 ```
+
+**重要**：必须指定 `-g cmd/server/main.go` 参数，不能直接运行 `swag init`。
 
 ### 访问文档
 启动服务后访问：`http://localhost:8080/swagger/index.html`
