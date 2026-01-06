@@ -1,0 +1,321 @@
+basePath: /
+definitions:
+  model.Admin:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      role:
+        $ref: '#/definitions/model.AdminRole'
+      status:
+        description: 1:正常 0:禁用
+        type: integer
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  model.AdminRole:
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-comments:
+      RoleAdmin: 普通管理员
+      RoleOperator: 操作员
+      RoleSuperAdmin: 超级管理员
+    x-enum-descriptions:
+    - 超级管理员
+    - 普通管理员
+    - 操作员
+    x-enum-varnames:
+    - RoleSuperAdmin
+    - RoleAdmin
+    - RoleOperator
+  model.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      nickname:
+        type: string
+      password:
+        type: string
+      status:
+        description: 1:正常 2:禁用
+        type: integer
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  model.UserProfile:
+    properties:
+      activity_balance:
+        type: number
+      balance:
+        type: number
+      created_at:
+        type: string
+      experience:
+        type: integer
+      id:
+        type: integer
+      level:
+        type: integer
+      register_time:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        description: 关联到users表的ID
+        type: integer
+    type: object
+  service.AdminLoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  service.AdminLoginResponse:
+    properties:
+      admin_info:
+        $ref: '#/definitions/model.Admin'
+      token:
+        type: string
+    type: object
+  service.CreateAdminRequest:
+    properties:
+      password:
+        maxLength: 50
+        minLength: 6
+        type: string
+      role:
+        $ref: '#/definitions/model.AdminRole'
+      username:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - password
+    - role
+    - username
+    type: object
+  service.RegAndLoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  service.RegAndLoginResponse:
+    properties:
+      token:
+        type: string
+      user_info:
+        $ref: '#/definitions/model.User'
+      user_profile:
+        $ref: '#/definitions/model.UserProfile'
+    type: object
+  util.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: 高性能 Go API 服务，单机 QPS > 20000
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: bGame API 文档
+  version: "1.0"
+paths:
+  /api/admin/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建新管理员账户，需要超级管理员权限
+      parameters:
+      - description: 创建管理员请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/service.CreateAdminRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建管理员
+      tags:
+      - 管理员接口
+  /api/admin/info:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前登录管理员的信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Admin'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取管理员信息
+      tags:
+      - 管理员接口
+  /api/admin/login:
+    post:
+      consumes:
+      - application/json
+      description: 管理员登录接口，返回JWT token和管理员信息
+      parameters:
+      - description: 登录请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/service.AdminLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.AdminLoginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.Response'
+      summary: 管理员登录
+      tags:
+      - 管理员接口
+  /api/admin/roles:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有可用的管理员角色列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response'
+      summary: 获取角色列表
+      tags:
+      - 管理员接口
+  /api/user/info:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户信息接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取用户信息
+      tags:
+      - 用户接口
+  /api/user/regAndLogin:
+    post:
+      consumes:
+      - application/json
+      description: 用户注册和登录合并接口
+      parameters:
+      - description: 注册和登录请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/service.RegAndLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.RegAndLoginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.Response'
+      summary: 用户注册和登录合并
+      tags:
+      - 用户接口
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
